@@ -6,6 +6,4 @@ import spb.alex.security_3_1_4.model.Role;
 public interface RoleRepository extends JpaRepository<Role, Long> {
 
     Role findRoleById(Long id);
-
-    //Set<Role> findRoleById(Long id, Pageable pageable);
 }

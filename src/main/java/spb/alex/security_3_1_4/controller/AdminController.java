@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import spb.alex.security_3_1_4.DTO.UserDTO;
 import spb.alex.security_3_1_4.model.Role;
@@ -27,45 +26,10 @@ public class AdminController {
         this.roleService = roleService;
     }
 
-//    @GetMapping(value = "/admin")
-//    public String listUsers(Model model, Authentication authentication) {
-//
-//        if (authentication != null) {
-//            UserDetails ud = (UserDetails) authentication.getPrincipal();
-//            model.addAttribute("currUser", userService.findByName(ud.getUsername()));
-//        }
-//        else {
-//            model.addAttribute("currUser", new User());
-//        }
-//        model.addAttribute("newUser", new User());
-//        model.addAttribute("users", userService.findAllUsers());
-//        List<Role> allRoles = roleService.getAllRoles();
-//        model.addAttribute("allRoles", allRoles);
-//
-//        return "admin"; // имя представления;
-//    }
-
     @GetMapping("/api")
     public List<User> showAllUsersRest() {
-        List<User> users = userService.findAllUsers();
 
-        return users;
-    }
-
-    @GetMapping("/new")
-    public String getAddPage(Model model) {
-        model.addAttribute("user", new User());
-        List<Role> allRoles = roleService.getAllRoles();
-        model.addAttribute("allRoles", allRoles);
-
-        return "new";
-    }
-
-    @PostMapping("/new")
-    public String createUser(@ModelAttribute("user") User user) {
-        userService.createUserWithRoles(user, user.getRoles());
-
-        return "redirect:/admin/admin";
+        return userService.findAllUsers();
     }
 
     @PostMapping("/api/new")
@@ -82,8 +46,8 @@ public class AdminController {
         if (userDTO.getRoleIds() != null) {
             user.setRoles(roleService.findRolesByIds(userDTO.getRoleIds()));
         }
-
         User createdUser = userService.saveUser(user);
+
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
 
@@ -92,25 +56,8 @@ public class AdminController {
         User user = new User();
         Set<Role> roles = new HashSet<>(roleService.getAllRoles());
         user.setRoles(roles);
+
         return user;
-    }
-
-    @GetMapping("/delete")
-    public String getDeletePage(Model model,
-                                @RequestParam Long id) {
-        User user = userService.findById(id); // Загружаем пользователя по id
-        model.addAttribute("user", user);// Передаем существующего пользователя
-        List<Role> allRoles = roleService.getAllRoles();
-        model.addAttribute("allRoles", allRoles);
-
-        return "delete";
-    }
-
-    @PostMapping("/delete")
-    public String deleteUser(@RequestParam Long id) {
-        userService.deleteUser(id);
-
-        return "redirect:/admin/admin";
     }
 
     @DeleteMapping("/api/delete")
@@ -138,23 +85,13 @@ public class AdminController {
             if (userDTO.getRoleIds() != null) {
                 existingUser.setRoles(roleService.findRolesByIds(userDTO.getRoleIds()));
             }
-
             User updatedUser = userService.saveUser(existingUser);
+
             return ResponseEntity.ok(updatedUser);
         } else {
+
             return ResponseEntity.notFound().build();
         }
-    }
-
-    @GetMapping("/update")
-    public String getUpdatePage(Model model,
-                                @RequestParam Long id) {
-        User user = userService.findById(id); // Загружаем пользователя по id
-        model.addAttribute("user", user); // Передаем существующего пользователя
-        List<Role> allRoles = roleService.getAllRoles();
-        model.addAttribute("allRoles", allRoles);
-
-        return "update";
     }
 
     @PostMapping("/update")
@@ -163,14 +100,6 @@ public class AdminController {
         userService.updateUser(id, user, user.getRoles());
 
         return "redirect:/admin/admin";
-    }
-
-    @GetMapping(value = "/user")
-    public String getUserProfile(Model model,
-                                 @RequestParam Long id) {
-        model.addAttribute("user", userService.findById(id));
-
-        return "user";
     }
 
     @GetMapping("/api/user")
