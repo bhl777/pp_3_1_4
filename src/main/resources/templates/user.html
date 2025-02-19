@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="">
+<meta name="generator" content="">
+<title>Dashboard</title>
+
+<!-- Bootstrap core CSS -->
+<link href="/css/bootstrap.min.css" rel="stylesheet">
+<script src="/js/jquery.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+
+<!-- Custom styles for this template -->
+<link href="/css/dashboard.css" rel="stylesheet">
+
+</head>
+<body>
+
+<nav id="topbarMenu" class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+	<span class="navbar-brand border border-danger bg-transparent border-0 shadow-none mr-0 px-3"><strong></strong> with roles: <tt></tt></span>
+	<button class="navbar-toggler position-absolute d-md-none collapsed" type="button" data-toggle="collapse" data-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+	<ul class="navbar-nav px-3">
+		<li class="nav-item text-nowrap">
+			<a class="nav-link" href="/logout">Logout</a>
+		</li>
+	</ul>
+</nav>
+
+<div class="container-fluid">
+	<div class="row">
+
+<!-- Боковое меню -->
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+	<div class="sidebar-sticky pt-3">
+		<ul class="nav nav-pills flex-column">
+			<li class="nav-item d-none"><a class="nav-link" href="/admin/admin">Admin</a></li>
+			<li class="nav-item"><a class="nav-link active" href="/user">User <span class="sr-only">(current)</span></a></li>
+		</ul>
+	</div>
+</nav>
+
+<!-- Содержимое странички -->
+<main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-0">
+	<h1 class="h2">User information page</h1>
+</div>
+
+<div class="card w-100">
+	<div class="card-header"><h5 class="sub-header">About user</h5></div>
+	<div class="card-body">
+
+<div class="table-responsive">
+
+	<table class="table table-striped" id="tableUsers">
+		<thead>
+		<tr>
+			<th>ID</th>
+			<th>First Name</th>
+			<th>Last name</th>
+			<th>Age</th>
+			<th>Email</th>
+			<th>Roles</th>
+		</tr>
+		</thead>
+		<tbody>
+
+		<tr id="tableUsers_ErrorUser" class="d-table-row">
+			<td colspan="8"><p class="text-center text-danger p-5">Загрузка информации о текущем пользователе</p></td>
+		</tr>
+
+		<tr id="tableUsers_SkeletonUser" class="d-none">
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+			<td></td>
+		</tr>
+
+		</tbody>
+	</table>
+
+</div>
+
+	</div>
+</div>
+
+</main>
+
+	</div>
+</div>
+
+<script type="text/javascript">
+
+// Функция выполнится автоматически
+(function() {
+
+	// Функция выполнится после полной загрузки ресурсов
+	document.addEventListener("DOMContentLoaded", function(event){
+
+// ------------------------------------------------------------
+// Раньше прочих подгружаются пользователи и роли для новых
+// ------------------------------------------------------------
+
+		// *******************************
+		// API -> /admin/api [GET]
+		// *******************************
+
+		// Загрузка текущего пользователя
+		$.ajax({url: '/user/get', type: 'GET', cache: false, dataType: 'json',
+
+			// Перед отправкой очистим окно
+			beforeSend: function() {
+				$("#tableUsers_ErrorUser").addClass("d-none").removeClass("d-table-row");
+			},
+
+			// Успешно
+			success: function(resultUser) {
+
+				if (typeof(resultUser) == 'object') {
+
+					if (resultUser.length == 0) {
+
+						$("#tableUsers_ErrorUser td > p").html("Ошибка загрузки пользователя ...");
+
+					} else {
+
+						// Обработка полученного списка пользователей
+						userEach = resultUser;
+						var userTableRow = $("#tableUsers_SkeletonUser").clone(true);
+						$(userTableRow).prop("id", "tableUsers_UID-"+userEach['id']);
+
+						// Каждая ячейка
+						$("td:eq(0)", userTableRow).html(userEach.id);
+						$("td:eq(1)", userTableRow).html(userEach.username);
+						$("td:eq(2)", userTableRow).html(userEach.lastName);
+						$("td:eq(3)", userTableRow).html(userEach.age);
+						$("td:eq(4)", userTableRow).html(userEach.email);
+						$("td:eq(5)", userTableRow).html(userEach.roles.map(r => r.name).join(', '));
+
+						// Каждая кнопка
+						$("td:eq(6) button", userTableRow).data('userid', userEach.id);
+						$("td:eq(7) button", userTableRow).data('userid', userEach.id);
+
+						$("#tableUsers tbody").append(userTableRow);
+						$(userTableRow).removeClass("d-none").show();
+
+						// Пишем кто мы такой
+						$("#topbarMenu .navbar-brand strong").html(userEach.email);
+						$("#topbarMenu .navbar-brand tt").html(userEach.roles.map(r => r.name).join(', '));
+
+						// Активируем ссылку на админку
+						if (userEach.roles.some(e => e.name == 'ROLE_ADMIN')) {
+							$("#sidebarMenu li.d-none").removeClass("d-none");
+						}
+
+						userEach = null;
+						userTableRow = null;
+
+					}
+
+				}
+
+			},
+
+			// Ошибка
+			error: function(xhr, exception) {
+				$("#tableUsers_ErrorUser").addClass("d-table-row").removeClass("d-none");
+				$("#tableUsers_ErrorUser td > p").html("Ошибка загрузки пользователя ...");
+			}
+
+		});
+
+	// DOMContentLoaded
+	});
+
+// function
+})();
+</script>
+
+</body>
+</html>
