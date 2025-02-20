@@ -34,19 +34,8 @@ public class AdminController {
 
     @PostMapping("/api/new")
     public ResponseEntity<User> createUser(@Valid @RequestBody UserDTO userDTO) {
-        User user = new User();
-        user.setUsername(userDTO.getUsername());
-        user.setLastName(userDTO.getLastName());
-        user.setAge(userDTO.getAge());
-        user.setEmail(userDTO.getEmail());
-        user.setPassword(userDTO.getPassword());
-        user.setPhone(userDTO.getPhone());
-
-        // Установка ролей
-        if (userDTO.getRoleIds() != null) {
-            user.setRoles(roleService.findRolesByIds(userDTO.getRoleIds()));
-        }
-        User createdUser = userService.saveUser(user);
+        User newUser = userService.createUserFromDTO(userDTO);
+        User createdUser = userService.saveUser(newUser);
 
         return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
     }
@@ -69,22 +58,10 @@ public class AdminController {
 
     @PutMapping("/api/update")
     public ResponseEntity<User> updateUser(@RequestParam Long id, @Valid @RequestBody UserDTO userDTO) {
-
         Optional<User> existingUserOpt = Optional.ofNullable(userService.findById(id));
-
         if (existingUserOpt.isPresent()) {
             User existingUser = existingUserOpt.get();
-            existingUser.setUsername(userDTO.getUsername());
-            existingUser.setLastName(userDTO.getLastName());
-            existingUser.setAge(userDTO.getAge());
-            existingUser.setEmail(userDTO.getEmail());
-            existingUser.setPassword(userDTO.getPassword());
-            existingUser.setPhone(userDTO.getPhone());
-
-            // Установка ролей
-            if (userDTO.getRoleIds() != null) {
-                existingUser.setRoles(roleService.findRolesByIds(userDTO.getRoleIds()));
-            }
+            existingUser.setPassword(userService.passCoder(userDTO.getPassword()));
             User updatedUser = userService.saveUser(existingUser);
 
             return ResponseEntity.ok(updatedUser);

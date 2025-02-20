@@ -1,5 +1,6 @@
 package spb.alex.security_3_1_4.service;
 
+import spb.alex.security_3_1_4.DTO.UserDTO;
 import spb.alex.security_3_1_4.model.User;
 import java.util.List;
 
@@ -13,4 +14,8 @@ public interface UserService {
     User findById(Long id);
 
     User saveUser(User user);
+
+    User createUserFromDTO (UserDTO userDTO);
+
+    String passCoder(String passString);
 }
