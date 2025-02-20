@@ -94,14 +94,6 @@ public class AdminController {
         }
     }
 
-    @PostMapping("/update")
-    public String updateUser(@ModelAttribute("user") User user,
-                             @RequestParam Long id) {
-        userService.updateUser(id, user, user.getRoles());
-
-        return "redirect:/admin/admin";
-    }
-
     @GetMapping("/api/user")
     public User getUserRest(@RequestParam Long id) {
         return userService.findById(id);

@@ -20,23 +20,18 @@ public class User implements UserDetails {
     @Column(unique=true)
     private String username;
 
-    @Column
     private String lastName;
 
-    @Column
     private int age;
 
-    @Column
     private String email;
 
-    @Column
     private String password;
 
     public String getLastName() {
         return lastName;
     }
 
-    @Column
     private String phone;
 
     @ManyToMany(fetch = FetchType.LAZY)
